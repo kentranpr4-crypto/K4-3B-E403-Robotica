@@ -4,14 +4,14 @@
 
 ## 👥 Thành viên nhóm & Phân công vai trò
 
-**Lớp:** 3B · **Phòng:** ____ · **Cụm:** ____ · **Track:** ____
+**Lớp:** 3B · **Phòng:** ____ · **Cụm:** ____ · **Track:** B · Trợ lý Discord (B2)
 
 | Họ và Tên | Mã Học Viên | Vai trò chính | Phần việc đảm nhiệm trong dự án |
 |---|---|---|---|
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
+| Trần Cao Quốc Định | 2A202602939 | B — Spec & Đội trưởng | Viết spec.md, nộp form 5 mốc, slide demo |
+| Nguyễn Thái Lương | 2A202602932 | A — Evidence | Mining bằng chứng từ k4_messages.csv / k4_daily_reports.md, khảo sát |
+| Nguyễn Xuân Trường | 2A202602761 | C — Build | Tích hợp lời gọi AI thật, prototype, codebase/ |
+| Nguyễn Mạnh Tiến | 2A202602506 | D — Eval | Golden set, đo lường, eval/ |
 
 > Nhóm copy nguyên file README này về repo của mình, rồi điền bảng trên. Cột **Phần việc đảm nhiệm** ghi càng cụ thể càng tốt.
 
