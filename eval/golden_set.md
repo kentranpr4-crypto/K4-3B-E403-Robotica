@@ -42,6 +42,7 @@ Nguồn: `data/discord-pack/k4_messages.csv` + `data/discord-pack/k4_daily_repor
 | 14 | Hỏi XP / bảng xếp hạng | Cụm riêng "XP/leaderboard" |
 | 15 | Hỏi lịch workshop, đặt tên Zoom đúng cú pháp | Cụm "lịch & quy cách Zoom workshop" |
 | 16 | Hỏi cách mở ticket hỗ trợ qua kênh vlearn-support | Cụm riêng, có thể liên kết với case đang mở (M24366) |
+| 20 | M89035 hỏi "Bài lab1 tôi clone code, không fork thì bị tính là fail rồi đúng không" | Gộp cụm "Quy định clone/fork code", không gộp vào lỗi nộp muộn |
 
 ## Case hiếm (3)
 
