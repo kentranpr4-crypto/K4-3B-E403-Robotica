@@ -1,5 +1,7 @@
 # CP2 — Sơ đồ luồng: Bản tin ngày gộp cụm cho TA
 
+![Luồng chính TA journey](flow.png)
+
 ## Luồng chính (TA journey)
 
 ```
