@@ -55,9 +55,11 @@ Học viên đang hỏi gì
 
 ```
 Học viên đang hỏi gì
-• 3 học viên đang hỏi về "nộp Lab2 muộn / gia hạn deadline"
-  (nguồn: M88027, M20574, M75012, M40677)
+• 🔴 [Nộp bài & deadline] 3 học viên đang hỏi về "nộp Lab2 muộn / gia hạn deadline"
+  — ưu tiên: Cao (nguồn: M88027, M20574, M75012, M40677)
 ```
+
+Danh mục do AI phân loại (ngữ nghĩa); mức ưu tiên (🔴 Cao / 🟡 Trung bình / 🟢 Thấp) tính bằng code từ số học viên + danh mục — không để AI tự chấm khẩn cấp (xem `codebase/cluster_report.py: compute_priority`).
 -> TA thấy ngay: 1 vấn đề, 3 người, bấm vào nguồn để xử lý theo đúng số người thật.
 
 ## Trạng thái build hiện tại

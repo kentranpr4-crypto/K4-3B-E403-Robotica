@@ -12,18 +12,29 @@ import sys
 JUNK_RE = re.compile(r"^[\W\d]{0,3}$")
 AUTHOR_LEAK_RE = re.compile(r"\bD\d{3,6}\b")
 
+CATEGORIES = [
+    "Nộp bài & deadline",
+    "Thông tin chung & logistics",
+    "Kiến thức học thuật",
+    "Kỹ thuật & công cụ",
+    "Khác",
+]
+
 CLUSTER_PROMPT = """Bạn là trợ lý tổng hợp bản tin ngày cho TA một khoá học online.
 
-Nhiệm vụ: đọc danh sách tin nhắn học viên bên dưới, GOM các tin cùng một vấn đề cụ thể thành một cụm.
+Nhiệm vụ: đọc danh sách tin nhắn học viên bên dưới, GOM các tin cùng một vấn đề cụ thể thành một cụm,
+và gắn cho mỗi cụm đúng MỘT danh mục trong danh sách sau: {categories}.
 
 QUY TẮC BẮT BUỘC:
 1. Chỉ gộp khi CHẮC CHẮN cùng một vấn đề cụ thể. Nếu hai tin có thể là hai vấn đề khác nhau dù dùng từ giống nhau (ví dụ hai deadline khác nhau, hai loại lỗi khác nhau) — KHÔNG gộp, tách riêng và đánh dấu "uncertain": true cho từng cụm đó.
 2. KHÔNG tự kết luận một vấn đề "đã được xử lý" trừ khi chính trong danh sách tin nhắn này có một tin trả lời rõ ràng cho đúng vấn đề đó.
 3. KHÔNG gộp câu hỏi mang tính cá nhân (tra cứu thông tin riêng của một người, ví dụ điểm danh/lịch sử của riêng bạn đó) vào cụm công khai — liệt các msg_id này vào "dropped_msg_ids" với lý do "personal", không tính vào số đếm công khai.
-4. Chỉ trả lời bằng JSON đúng schema dưới đây, không thêm chữ nào khác ngoài JSON.
+4. "category" chỉ được chọn đúng 1 trong danh sách đã cho, không tự bịa danh mục mới.
+5. KHÔNG tự chấm mức độ khẩn cấp/ưu tiên — việc đó hệ thống tính riêng từ dữ liệu thật, bạn chỉ cần trả về category và danh sách msg_ids.
+6. Chỉ trả lời bằng JSON đúng schema dưới đây, không thêm chữ nào khác ngoài JSON.
 
 Schema:
-{{"clusters": [{{"topic": "tên chủ đề ngắn gọn", "msg_ids": ["M#####", ...], "uncertain": false}}], "dropped_msg_ids": ["M#####"]}}
+{{"clusters": [{{"topic": "tên chủ đề ngắn gọn", "category": "một trong danh sách danh mục", "msg_ids": ["M#####", ...], "uncertain": false}}], "dropped_msg_ids": ["M#####"]}}
 
 Tin nhắn cần xử lý (định dạng "msg_id: nội dung"):
 {messages_block}
@@ -58,7 +69,10 @@ def strip_identifiers(text):
 
 def build_prompt(rows):
     lines = [f"{r['msg_id']}: {r['content'][:300]}" for r in rows]
-    return CLUSTER_PROMPT.format(messages_block="\n".join(lines))
+    return CLUSTER_PROMPT.format(
+        categories=", ".join(CATEGORIES),
+        messages_block="\n".join(lines),
+    )
 
 
 def call_gemini(prompt, model_name="gemini-1.5-flash"):
@@ -86,11 +100,42 @@ def recompute_unique_author_count(cluster, id_to_row):
     authors = {id_to_row[mid]["author"] for mid in cluster["msg_ids"] if mid in id_to_row}
     return len(authors)
 
+
+def compute_priority(cluster, unique_author_count):
+    """Mức ưu tiên tính bằng code từ số liệu thật — KHÔNG để AI tự chấm khẩn cấp,
+    vì đó là kết luận có hậu quả (TA xử lý cái gì trước) mà không có căn cứ kiểm chứng
+    được nếu để AI tự bịa (đúng lớp lỗi ① nguồn sự thật).
+
+    Quy tắc (giải thích được — G11):
+    - Cao: >=5 học viên bất kể danh mục, HOẶC >=3 học viên và thuộc "Nộp bài & deadline"
+      (sai deadline gây hậu quả điểm số trực tiếp — cost-of-error cao).
+    - Trung bình: >=2 học viên, hoặc 1 học viên nhưng thuộc "Nộp bài & deadline".
+    - Thấp: còn lại.
+    """
+    category = cluster.get("category", "Khác")
+    if unique_author_count >= 5 or (unique_author_count >= 3 and category == "Nộp bài & deadline"):
+        return "Cao"
+    if unique_author_count >= 2 or category == "Nộp bài & deadline":
+        return "Trung bình"
+    return "Thấp"
+
+
+PRIORITY_ICON = {"Cao": "🔴", "Trung bình": "🟡", "Thấp": "🟢"}
+
+
 def format_report_line(cluster, id_to_row):
     n = recompute_unique_author_count(cluster, id_to_row)
+    category = cluster.get("category", "Khác")
+    if category not in CATEGORIES:
+        category = "Khác"  # lưới an toàn: model bịa danh mục ngoài danh sách thì gạt về "Khác"
+    priority = compute_priority(cluster, n)
     tag = " (cần TA xác nhận)" if cluster.get("uncertain") else ""
     sources = ", ".join(cluster["msg_ids"])
-    line = f"- {n} học viên đang hỏi về \"{cluster['topic']}\"{tag} (nguồn: {sources})"
+    icon = PRIORITY_ICON[priority]
+    line = (
+        f"- {icon} [{category}] {n} học viên đang hỏi về \"{cluster['topic']}\""
+        f"{tag} — ưu tiên: {priority} (nguồn: {sources})"
+    )
     return strip_identifiers(line)
 
 

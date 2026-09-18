@@ -42,6 +42,7 @@ Loại: [x] Tối ưu tính năng có sẵn (B2 — bản tin ngày)
   | G11 — Giải thích vì sao | Mỗi dòng report giữ `msg_id` nguồn thay vì chỉ đưa kết luận — TA bấm vào xem căn cứ |
   | G9 — Sửa dễ dàng | flow.md bước [6]: nút "tách cụm này" khi TA thấy gộp sai (chưa build, để CP4) |
   | G1 — Làm rõ hệ thống làm được gì | Bản tin ghi rõ "cần TA xác nhận" cho case mơ hồ thay vì im lặng coi như đúng |
+  | G11 — Giải thích vì sao (mở rộng) | Mức ưu tiên (Cao/Trung bình/Thấp) tính bằng quy tắc rõ ràng từ số học viên + danh mục — không để AI tự chấm khẩn cấp mà không có căn cứ (`compute_priority` trong `cluster_report.py`) |
 
 ## §5. Kiểu lỗi — 4 lớp chỗ khó + kịch bản (≥8) — chi tiết đầy đủ trong `eval/golden_set.md`
 | Lớp | Tình huống cụ thể | Hành vi mong muốn | Nguyên tắc áp |
@@ -72,8 +73,9 @@ Loại: [x] Tối ưu tính năng có sẵn (B2 — bản tin ngày)
 - Golden set: 19 case đã dựng trong `eval/golden_set.md` (8 case theo 4 lớp × 2, 8 case thường, 3 case hiếm; 15/19 case trích thật từ chatlog) — cần bổ sung ≥1 case nữa cho đủ ≥20 (D phụ trách).
 - Quality bar (đề xuất, **cần cả nhóm xác nhận trước khi chốt tại CP4 21:00 18/9**): "Đạt khi ≥80% case về lỗi ①②③④ không vi phạm (không đếm nhầm người, không gộp lố, không bịa nguồn, không lộ định danh), và 100% case ③ (ngoài phạm vi/riêng tư) phải đạt — vì đây là lỗi không được phép xảy ra dù chỉ 1 lần."
 - Kết quả các lượt chạy:
-  - **Lượt 0 (đã chạy thật, không cần API key)** — lưới an toàn xử lý bằng code (`codebase/test_safety_checks.py`): **5/5 test PASS** — lọc tin bot, lọc tin rác, đếm lại đúng số người duy nhất (D6014 hỏi 2 lần → tính đúng 1 người), che mã định danh.
-  - **Lượt 1 (phần gộp cụm ngữ nghĩa bằng AI)** — [CẦN ĐIỀN, chờ C có `GEMINI_API_KEY` chạy `codebase/cluster_report.py` qua 19 case, điền bảng % thật, không bịa số].
+  - **Lượt 0 (đã chạy thật, không cần API key)** — lưới an toàn xử lý bằng code (`codebase/test_safety_checks.py`): **8/8 test PASS** — lọc tin bot, lọc tin rác, đếm lại đúng số người duy nhất (D6014 hỏi 2 lần → tính đúng 1 người), che mã định danh, tính đúng mức ưu tiên (Cao/Trung bình/Thấp) theo quy tắc rõ ràng dựa trên số người + danh mục.
+  - **Lượt 1 (thử tay bởi C, gọi Gemini thật, 18/9)** — **5/7 (~71%)** đạt chuẩn "gọi AI thật, gộp đúng ngữ nghĩa, hiển thị đầy đủ" (xem `eval/run_log_1.md`). 2 lần chưa đạt: lỗi gọi API (chưa rõ nguyên nhân cụ thể) và code chưa ép schema output rõ ràng nên model thiếu trường hiển thị.
+  - **Lượt 2 (chạy đủ 19 case golden set qua `eval/run_eval.py`)** — [CẦN ĐIỀN trước CP4 21:00, để có số đo đầy đủ hơn 7 lần thử tay].
 
 ## §8. Phân công & kế hoạch
 - Phân công có tên:

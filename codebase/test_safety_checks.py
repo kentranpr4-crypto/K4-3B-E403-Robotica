@@ -7,6 +7,7 @@ from cluster_report import (
     filter_candidate_questions,
     strip_identifiers,
     recompute_unique_author_count,
+    compute_priority,
 )
 
 ROWS = [
@@ -55,6 +56,22 @@ def test_recompute_counts_dedups_repeat_asker():
     cluster = {"topic": "nộp Lab2 muộn", "msg_ids": ["M88027", "M20574", "M75012", "M40677"]}
     n = recompute_unique_author_count(cluster, ID_TO_ROW)
     assert n == 3, f"Kỳ vọng 3 học viên duy nhất (D3115,D6014,D7496), model/code trả về {n}"
+
+
+def test_priority_high_for_deadline_cluster_with_3_students():
+    # Cụm Lab2: 3 học viên duy nhất, danh mục "Nộp bài & deadline" -> phải là Cao
+    cluster = {"category": "Nộp bài & deadline"}
+    assert compute_priority(cluster, unique_author_count=3) == "Cao"
+
+
+def test_priority_medium_for_single_deadline_question():
+    cluster = {"category": "Nộp bài & deadline"}
+    assert compute_priority(cluster, unique_author_count=1) == "Trung bình"
+
+
+def test_priority_low_for_single_non_deadline_question():
+    cluster = {"category": "Kiến thức học thuật"}
+    assert compute_priority(cluster, unique_author_count=1) == "Thấp"
 
 
 def test_strip_identifiers_removes_author_codes():
