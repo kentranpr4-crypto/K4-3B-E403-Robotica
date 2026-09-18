@@ -12,7 +12,14 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "codebase"))
 
-from cluster_report import load_messages, filter_candidate_questions, build_prompt, call_gemini, parse_model_json
+from cluster_report import (
+    load_messages,
+    filter_candidate_questions,
+    build_prompt,
+    call_gemini,
+    parse_model_json,
+    strip_personal_messages,
+)
 
 CSV_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "discord-pack", "k4_messages.csv")
 DAY = None  # None = chạy trên cả pack, không lọc theo ngày
@@ -39,9 +46,11 @@ def verdict(candidates, parsed, required_msg_ids, check_fn):
 def run():
     rows = load_messages(CSV_PATH)
     candidates = filter_candidate_questions(rows, day=DAY)
+    id_to_row = {r["msg_id"]: r for r in rows}
     prompt = build_prompt(candidates)
     raw = call_gemini(prompt)
     parsed = parse_model_json(raw)
+    parsed["clusters"] = strip_personal_messages(parsed.get("clusters", []), id_to_row)  # lưới an toàn thứ 2
 
     results = []
 
