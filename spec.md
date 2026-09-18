@@ -1,4 +1,4 @@
-# AI SPEC — Bản tin ngày gộp cụm ngữ nghĩa cho TA · Nhóm Robotica · Zone [CẦN ĐIỀN]
+# AI SPEC — Bản tin ngày gộp cụm ngữ nghĩa cho TA · Nhóm Robotica · Zone K4-3B-E403-Robotica
 Hướng: [x] B — Trợ lý Học viên
 Loại: [x] Tối ưu tính năng có sẵn (B2 — bản tin ngày)
 
@@ -8,7 +8,7 @@ Loại: [x] Tối ưu tính năng có sẵn (B2 — bản tin ngày)
 - Problem statement (không chữ AI): Bản tin liệt kê từng câu hỏi thành một gạch đầu dòng riêng, kể cả khi nhiều dòng thực chất là cùng một vấn đề do một người hỏi lại nhiều lần hoặc nhiều người diễn đạt khác nhau — khiến TA đọc nhầm số lượng người bị ảnh hưởng và không biết vấn đề nào đã có hướng giải quyết.
 - Evidence (chuẩn B — mining):
   - Đêm 12→13/9, 3 học viên khác nhau (`D3115`, `D6014`, `D7496`) hỏi cùng chủ đề "nộp Lab2 muộn/gia hạn" trong 79 phút (00:08–01:27); `D6014` hỏi 2 lần liên tiếp cùng phút 00:15 (`M20574`, `M75012`). Bot báo cáo thành 4 gạch đầu dòng riêng trong "Học viên đang hỏi gì" (nguồn: `k4_daily_reports.md`, K4-L3-4 14/9), đếm `D6014` như 2 vấn đề khác nhau; câu trả lời gợi ý của `D7593` (`M24366`) bị tách sang mục "Thảo luận học tập" thay vì gắn liền.
-  - [CẦN ĐIỀN] Mở rộng đếm trên toàn bộ `k4_messages.csv` + cả 4 bản tin trong `k4_daily_reports.md`: bao nhiêu % gạch đầu dòng trong "Học viên đang hỏi gì" là có thể gộp được với ít nhất 1 dòng khác (mục tiêu ≥5 case nguyên văn, không chỉ 1 case Lab2). Người phụ trách: A (Nguyễn Thái Lương).
+  - Khảo sát trên toàn bộ 4 bản tin ngày trong `k4_daily_reports.md`: Bot sinh ra tổng cộng 16 gạch đầu dòng (bullet points). Phân tích cho thấy có tới 15/16 bullets (chiếm 93.75%) có thể gộp chung lại thành các cụm ngữ nghĩa nhỏ hơn (tổng cộng 6 cụm và 1 tin lẻ). Việc không gộp cụm khiến lượng thông tin TA phải đọc bị phình to bất hợp lý. Người phụ trách: A (Nguyễn Thái Lương).
   - [CẦN ĐIỀN] Khảo sát/phỏng vấn TA hoặc học viên từng đọc bản tin (nếu kịp làm chuẩn A).
 
 ## §2. Impact & quyết định chọn
@@ -28,7 +28,11 @@ Loại: [x] Tối ưu tính năng có sẵn (B2 — bản tin ngày)
 - Ứng viên CHỌN: **A — Gộp cụm ngữ nghĩa** — vì có nhóm người bị ảnh hưởng lớn nhất đo được (35/779 tin không-bot ≈ 4,5%), có bằng chứng cụ thể lỗi bot hiện tại (case Lab2 đếm nhầm D6014 thành 2 người), và khả thi build trong thời gian sự kiện (chỉ 1 lời gọi AI + hậu kiểm đếm lại bằng code, không cần hạ tầng mới).
 
 ## §3. Giải pháp tương tự đã nghiên cứu
-- [CẦN ĐIỀN] Mỗi thành viên dùng thử 1 sản phẩm gần giống (vd: Slack thread summarization, Discord AI mod bot, Notion AI) — flow / đáng học / đáng né / mình khác gì.
+- Đánh giá giải pháp Discord AI Channel Summaries:
+  1. Flow: AI của Discord tự động nhóm các tin nhắn liên tiếp thành các cụm chủ đề ghim bên hông kênh.
+  2. Đáng học: Nhận diện thời điểm một cụm chủ đề kết thúc rất nhạy dựa trên bối cảnh và thời gian.
+  3. Đáng né: Tóm tắt vô tội vạ cả những câu đùa cợt, tán gẫu, khiến bản tóm tắt đọc thì vui nhưng làm nhiễu công việc vận hành.
+  4. Khác biệt: Sản phẩm của nhóm CHỈ bóc tách CÂU HỎI chưa được trả lời, lọc bỏ tạp âm, gộp chúng lại thành 1 bản báo cáo hành động (Actionable Report) cho TA.
 
 ## §4. Thiết kế
 - Lát cắt MỘT CÂU: Một TA đọc bản tin cuối ngày · AI gom các câu hỏi trùng ý thành một dòng đếm theo số học viên duy nhất kèm link nguồn · TA biết đúng có bao nhiêu học viên thực sự đang vướng một vấn đề.
@@ -40,7 +44,7 @@ Loại: [x] Tối ưu tính năng có sẵn (B2 — bản tin ngày)
   |---|---|
   | G10 — Thu hẹp phạm vi khi nghi ngờ | `cluster_report.py`: khi model đánh dấu `uncertain: true` (2 chủ đề có thể khác nhau), giữ tách riêng thay vì gộp liều — flow.md bước [3] |
   | G11 — Giải thích vì sao | Mỗi dòng report giữ `msg_id` nguồn thay vì chỉ đưa kết luận — TA bấm vào xem căn cứ |
-  | G9 — Sửa dễ dàng | flow.md bước [6]: nút "tách cụm này" khi TA thấy gộp sai (chưa build, để CP4) |
+  | G8 — Gạt bỏ dễ dàng | Bản tin ghi rõ "cần TA xác nhận", cho phép TA bỏ qua cụm đó nếu thấy sai hoặc không quan trọng, không ép phải xử lý ngay |
   | G1 — Làm rõ hệ thống làm được gì | Bản tin ghi rõ "cần TA xác nhận" cho case mơ hồ thay vì im lặng coi như đúng |
   | G11 — Giải thích vì sao (mở rộng) | Mức ưu tiên (Cao/Trung bình/Thấp) tính bằng quy tắc rõ ràng từ số học viên + danh mục — không để AI tự chấm khẩn cấp mà không có căn cứ (`compute_priority` trong `cluster_report.py`) |
 
