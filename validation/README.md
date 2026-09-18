@@ -1,6 +1,12 @@
 # Validation (R6 — bonus +8 điểm)
 
-Cần **5 người ngoài nhóm** dùng thử (trong đó ≥2 người đã khai từ CP1: Mai Tiến Huy, Lê Việt Hoàng, Hoàng Ngọc Đức — cần thêm 2 người nữa).
+Cần **5 người ngoài nhóm** dùng thử. Danh sách đủ 5:
+
+1. Mai Tiến Huy — willing user khai từ CP1
+2. Lê Việt Hoàng — willing user khai từ CP1
+3. Hoàng Ngọc Đức — willing user khai từ CP1
+4. Cao Đức Hiếu — 2A202607101
+5. Trịnh Xuân Huy — 2A202602995
 
 ## Kịch bản phiên test (10 phút/người) — theo 02-guide.md §4.2
 
@@ -17,11 +23,11 @@ Cần **5 người ngoài nhóm** dùng thử (trong đó ≥2 người đã kha
 
 | # | Người thử (tên/vai — willing user?) | Task | Quan sát | Quote nguyên văn | Mức nghiêm trọng |
 |---|---|---|---|---|---|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | Mai Tiến Huy — học viên K4, willing user CP1 | | | | |
+| 2 | Lê Việt Hoàng — học viên K4, willing user CP1 | | | | |
+| 3 | Hoàng Ngọc Đức — học viên K4, willing user CP1 | | | | |
+| 4 | Cao Đức Hiếu — 2A202607101, học viên K4 | | | | |
+| 5 | Trịnh Xuân Huy — 2A202602995, học viên K4 | | | | |
 
 **Tổng hợp cuối (điền sau khi có ≥5 phiên):**
 - Chủ đề lặp nhiều nhất:
