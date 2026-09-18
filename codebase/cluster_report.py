@@ -12,6 +12,16 @@ import sys
 JUNK_RE = re.compile(r"^[\W\d]{0,3}$")
 AUTHOR_LEAK_RE = re.compile(r"\bD\d{3,6}\b")
 
+# Lưới an toàn THỨ 2 cho câu hỏi cá nhân, độc lập với prompt — vì đây là lớp lỗi
+# nghiêm trọng nhất (lộ thông tin cá nhân), không được phép chỉ dựa vào AI tự giác
+# tuân theo instruction. Thực tế đo được: M28943 ("...điểm danh của mình...") đã
+# lọt vào cụm công khai dù prompt đã yêu cầu loại trừ (xem eval/run_log_2.md).
+PERSONAL_MARKER_RE = re.compile(
+    r"(của\s+(tôi|mình|em|bạn ấy)\b.{0,20}(điểm danh|lịch sử|log|tài khoản|hồ sơ)"
+    r"|(điểm danh|lịch sử|log|tài khoản|hồ sơ).{0,20}của\s+(tôi|mình|em|bạn ấy)\b)",
+    re.IGNORECASE,
+)
+
 CATEGORIES = [
     "Nộp bài & deadline",
     "Thông tin chung & logistics",
@@ -139,6 +149,21 @@ def format_report_line(cluster, id_to_row):
     return strip_identifiers(line)
 
 
+def strip_personal_messages(clusters, id_to_row):
+    """Lưới an toàn thứ 2: nếu AI lỡ không loại câu hỏi cá nhân theo đúng chỉ dẫn
+    trong prompt, code tự rà lại nội dung gốc bằng heuristic từ khoá và loại khỏi
+    cụm công khai. Cụm rỗng sau khi loại thì bỏ luôn cụm đó."""
+    cleaned = []
+    for c in clusters:
+        kept_ids = [
+            mid for mid in c["msg_ids"]
+            if not (mid in id_to_row and PERSONAL_MARKER_RE.search(id_to_row[mid]["content"]))
+        ]
+        if kept_ids:
+            cleaned.append({**c, "msg_ids": kept_ids})
+    return cleaned
+
+
 def build_report(csv_path, day=None):
     rows = load_messages(csv_path)
     candidates = filter_candidate_questions(rows, day=day)
@@ -147,6 +172,7 @@ def build_report(csv_path, day=None):
     prompt = build_prompt(candidates)
     raw = call_gemini(prompt)
     parsed = parse_model_json(raw)
+    parsed["clusters"] = strip_personal_messages(parsed.get("clusters", []), id_to_row)
 
     lines = ["Học viên đang hỏi gì"]
     for cluster in parsed.get("clusters", []):

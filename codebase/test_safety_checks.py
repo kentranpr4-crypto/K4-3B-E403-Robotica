@@ -8,6 +8,7 @@ from cluster_report import (
     strip_identifiers,
     recompute_unique_author_count,
     compute_priority,
+    strip_personal_messages,
 )
 
 ROWS = [
@@ -72,6 +73,25 @@ def test_priority_medium_for_single_deadline_question():
 def test_priority_low_for_single_non_deadline_question():
     cluster = {"category": "Kiến thức học thuật"}
     assert compute_priority(cluster, unique_author_count=1) == "Thấp"
+
+
+def test_strip_personal_messages_catches_model_mistake():
+    # Case thật đo được ở eval/run_log_2.md: model lỡ đưa M28943 (câu hỏi cá nhân
+    # về điểm danh của chính người hỏi) vào cụm công khai dù prompt đã cấm.
+    id_to_row = {
+        "M28943": {"content": "mail về IT về kiểm tra các lượt điểm danh của mình ạ"},
+        "M55443": {"content": "check điểm danh như nào"},  # câu hỏi chung -> phải giữ
+    }
+    clusters = [{"topic": "điểm danh", "msg_ids": ["M28943", "M55443"]}]
+    cleaned = strip_personal_messages(clusters, id_to_row)
+    assert cleaned[0]["msg_ids"] == ["M55443"], "Phải loại M28943 (cá nhân) và giữ M55443 (câu hỏi chung)"
+
+
+def test_strip_personal_messages_drops_empty_cluster():
+    id_to_row = {"M28943": {"content": "kiểm tra điểm danh của mình giúp em với"}}
+    clusters = [{"topic": "điểm danh cá nhân", "msg_ids": ["M28943"]}]
+    cleaned = strip_personal_messages(clusters, id_to_row)
+    assert cleaned == [], "Cụm chỉ toàn tin cá nhân thì phải bị loại hết, không còn cụm rỗng"
 
 
 def test_strip_identifiers_removes_author_codes():
