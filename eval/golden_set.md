@@ -30,7 +30,7 @@ Nguồn: `data/discord-pack/k4_messages.csv` + `data/discord-pack/k4_daily_repor
 | 7 | 3 loại "deadline" khác nhau cùng xuất hiện 1 ngày: Lab2 (M88027 nhóm), ghép đội (M19124), feedback video (M16662) | Không gộp 3 chủ đề khác nhau vào 1 cụm dù cùng chữ "deadline" | 3 cụm tách biệt, mỗi cụm đúng msg_id của chủ đề đó |
 | 8 | Trong cụm Lab2: M88027 (xin gia hạn) vs M75012 (hỏi mức trừ điểm) — 2 sub-ý khác nhau dù cùng gốc vấn đề | Giữ chung 1 cụm chủ đề nhưng KHÔNG tự sinh một câu trả lời chung cho cả 2 (vì trả lời "có gia hạn" cho người hỏi "trừ mấy điểm" là sai) | Topic label trung lập ("nộp Lab2 muộn"), không kèm câu trả lời cụ thể do AI tự bịa |
 
-## Case thường (8) — nguồn: `k4_daily_reports.md` (đã có trích dẫn)
+## Case thường (9) — nguồn: `k4_daily_reports.md` + `k4_messages.csv` (đã có trích dẫn)
 
 | # | Input (tóm tắt) | Hành vi mong muốn |
 |---|---|---|
@@ -54,7 +54,7 @@ Nguồn: `data/discord-pack/k4_messages.csv` + `data/discord-pack/k4_daily_repor
 
 ---
 
-**Tổng: 19 case** (2+2+2+2 = 8 case theo 4 lớp, 8 case thường, 3 case hiếm) + cần A/D bổ sung thêm ≥1 case thường nữa từ `k4_messages.csv` cho đủ ≥20 và đủ mốc "≥10 case từ chatlog thật" (hiện đã có 15/19 case trích thật từ data, đạt).
+**Tổng: 20 case** (2+2+2+2 = 8 case theo 4 lớp, 9 case thường, 3 case hiếm) — đủ chuẩn ≥20 và đủ mốc "≥10 case từ chatlog thật" (16/20 case trích thật từ data, đạt).
 
 **Trạng thái đo:**
 - Case 3, 17 (lọc bot/rác): đã chạy test tự động thật, **PASS** — xem `codebase/test_safety_checks.py`.

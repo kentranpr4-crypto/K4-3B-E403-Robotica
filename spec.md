@@ -37,7 +37,7 @@ Loại: [x] Tối ưu tính năng có sẵn (B2 — bản tin ngày)
 ## §4. Thiết kế
 - Lát cắt MỘT CÂU: Một TA đọc bản tin cuối ngày · AI gom các câu hỏi trùng ý thành một dòng đếm theo số học viên duy nhất kèm link nguồn · TA biết đúng có bao nhiêu học viên thực sự đang vướng một vấn đề.
 - Non-goals (≥3 thứ KHÔNG build): (1) không tự động trả lời thay TA — chỉ tổng hợp, TA vẫn là người phản hồi; (2) không tự gửi tin nhắn cho học viên; (3) không nêu tên/định danh học viên (`D####`) trong bản tin công khai; (4) không tự sinh câu trả lời cho nội dung câu hỏi — chỉ gộp và mô tả chủ đề.
-- Mức prototype nhắm tới: [ ] Sketch [x] Mock — phần thật: lọc bot/rác, đếm lại số người, che định danh (đã code + test PASS); phần mock: gộp cụm ngữ nghĩa (cần AI thật ở CP3, code đã sẵn trong `codebase/cluster_report.py`, chờ API key)
+- Mức prototype nhắm tới: [ ] Sketch [x] Mock — phần thật: lọc bot/rác, đếm lại số người, che định danh, phân loại danh mục + tính ưu tiên (đã code + test PASS 8/8); phần gộp cụm bằng Gemini đã gọi AI thật (CP3: 5/7 lần đạt, xem `eval/run_log_1.md`) nhưng còn lỗi (gọi API thất bại 2/7 lần, schema output chưa chặt) — chưa đạt mức Working; phần "tách cụm khi TA thấy gộp sai" (§6 Correction) vẫn ở mức mock/chưa build
 - Automation: [x] Conditional — tự gộp khi chắc chắn cùng chủ đề; không tự gộp khi mơ hồ, giữ tách + gắn cờ "cần TA xác nhận". Lý do (cost-of-error): gộp lố 2 vấn đề khác nhau (vd 2 deadline khác nhau) khiến TA trả lời sai thông tin cho đúng người — sai thì đắt, nên chọn conditional thay vì automate.
 - §4b. Nguyên tắc đã áp dụng:
   | Nguyên tắc | Áp cụ thể vào đâu trong prototype |
@@ -58,7 +58,7 @@ Loại: [x] Tối ưu tính năng có sẵn (B2 — bản tin ngày)
 | ③ Ngoài phạm vi | Câu hỏi cá nhân "kiểm tra điểm danh của mình" (M28943) | Loại khỏi cụm công khai, không hiện trong bản tin | An toàn B2: không nêu định danh học viên |
 | ③ Ngoài phạm vi | Tin của bot (`is_bot=True`) bị đếm là câu hỏi học viên | Lọc bỏ trước khi đưa cho AI (đã build + test tự động, PASS) | — |
 | ④ Đặc thù domain | 3 loại "deadline" khác nhau (Lab2 / ghép đội / feedback video) cùng ngày, cùng chứa chữ "deadline" | Không gộp chung 1 cụm dù trùng từ khoá | G10 |
-| ④ Đặc thù domain | Trong 1 cụm có 2 sub-ý khác nhau (xin gia hạn vs hỏi mức trừ điểm) | Giữ topic trung lập, không tự sinh câu trả lời chung cho cả 2 | G9, G11 |
+| ④ Đặc thù domain | Trong 1 cụm có 2 sub-ý khác nhau (xin gia hạn vs hỏi mức trừ điểm) | Giữ topic trung lập, không tự sinh câu trả lời chung cho cả 2 | G8, G11 |
 
 ## §6. Bốn đường đi của trải nghiệm
 - Happy path: Nhiều học viên hỏi rõ cùng 1 chủ đề → gộp thành 1 dòng có số đếm (đếm lại bằng code, không tin số AI tự khai) + link (xem flow.md mock trước/sau)
@@ -74,12 +74,12 @@ Loại: [x] Tối ưu tính năng có sẵn (B2 — bản tin ngày)
   - **Không gộp lố** (pass/fail): 2 chủ đề khác nhau không nằm chung 1 cụm — đối chiếu bằng tay với ground-truth trong `eval/golden_set.md`.
   - **Không bịa nguồn** (pass/fail): mọi câu khẳng định "đã xử lý"/"deadline là X" phải trỏ được về msg_id thật trong input.
   - **Không lộ định danh** (pass/fail): output công khai không chứa mã `D####`.
-- Golden set: 19 case đã dựng trong `eval/golden_set.md` (8 case theo 4 lớp × 2, 8 case thường, 3 case hiếm; 15/19 case trích thật từ chatlog) — cần bổ sung ≥1 case nữa cho đủ ≥20 (D phụ trách).
+- Golden set: 20 case đã dựng trong `eval/golden_set.md` (8 case theo 4 lớp × 2, 9 case thường, 3 case hiếm; 16/20 case trích thật từ chatlog) — đủ chuẩn ≥20.
 - Quality bar (đề xuất, **cần cả nhóm xác nhận trước khi chốt tại CP4 21:00 18/9**): "Đạt khi ≥80% case về lỗi ①②③④ không vi phạm (không đếm nhầm người, không gộp lố, không bịa nguồn, không lộ định danh), và 100% case ③ (ngoài phạm vi/riêng tư) phải đạt — vì đây là lỗi không được phép xảy ra dù chỉ 1 lần."
 - Kết quả các lượt chạy:
   - **Lượt 0 (đã chạy thật, không cần API key)** — lưới an toàn xử lý bằng code (`codebase/test_safety_checks.py`): **8/8 test PASS** — lọc tin bot, lọc tin rác, đếm lại đúng số người duy nhất (D6014 hỏi 2 lần → tính đúng 1 người), che mã định danh, tính đúng mức ưu tiên (Cao/Trung bình/Thấp) theo quy tắc rõ ràng dựa trên số người + danh mục.
   - **Lượt 1 (thử tay bởi C, gọi Gemini thật, 18/9)** — **5/7 (~71%)** đạt chuẩn "gọi AI thật, gộp đúng ngữ nghĩa, hiển thị đầy đủ" (xem `eval/run_log_1.md`). 2 lần chưa đạt: lỗi gọi API (chưa rõ nguyên nhân cụ thể) và code chưa ép schema output rõ ràng nên model thiếu trường hiển thị.
-  - **Lượt 2 (chạy đủ 19 case golden set qua `eval/run_eval.py`)** — [CẦN ĐIỀN trước CP4 21:00, để có số đo đầy đủ hơn 7 lần thử tay].
+  - **Lượt 2 (chạy đủ 20 case golden set qua `eval/run_eval.py`)** — [CẦN ĐIỀN trước CP4 21:00, để có số đo đầy đủ hơn 7 lần thử tay — D phụ trách].
 
 ## §8. Phân công & kế hoạch
 - Phân công có tên:
